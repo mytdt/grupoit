@@ -17,8 +17,8 @@ Private aRotina := { {'Pesquisar' ,'AxPesqui'  ,0,01} ,;
 					 {'Visualizar','AxVisual'  ,0,02} ,;
 					 {'Incluir'   ,'U_MyLET001',0,03} ,;
 					 {'Alterar'   ,'U_MyLET001',0,04} ,;
-					 {'Excluir'   ,'U_MyLET001',0,05} }
-					 {'Desativar' ,'U_MyLET001',0,10} }
+					 {'Excluir'   ,'U_MyLET001',0,05} ,;
+					 {'Desativar' ,'U_MyLET001',0,10} ,;
 					 {'Legenda'   ,'U_MyLET001',0,11} }
 Private cDelFunc := '.T.'
 Private cString := 'LET'
@@ -59,12 +59,12 @@ aAdd( aParam,  {|| .T. })  //termino da transacao
 dbSelectArea(cAlias)
 If nOpc == 3
 	//AxInclui( cAlias, nReg, nOpc, aAcho, cFunc, aCpos, cTudoOk, lF3, cTransact, aButtons, aParam, aAuto, lVirtual, lMaximized, cTela, lPanelFin, oFather, aDim, uArea)
-	nOpcA := AxInclui(cAlias,nRecNo,3,,,,'U_MyLET002()',.F.,,_aButtons,aParam,,,.T.,,,,,)
+	nOpcA := AxInclui(cAlias,nRecNo,3,,,,'.T.',.F.,,_aButtons,aParam,,,.T.,,,,,)
 ElseIf nOpc == 4
 	//campos que podem ser alterados
 	_aCpos := {'LET_PRODUT', 'LET_CAPACI', 'LET_LASTRO'}
 	//AxAltera(cAlias,nReg,nOpc,aAcho,aCpos,nColMens,cMensagem,cTudoOk,cTransact,cFunc, aButtons, aParam, aAuto, lVirtual, lMaximized, cTela,lPanelFin,oFather,aDim,uArea)
-	nOpcA := AxAltera(cAlias,nRecNo,4,,_aCpos,,,'U_MyLET002()',,,_aButtons,aParam,,,.T.,,,,,)
+	nOpcA := AxAltera(cAlias,nRecNo,4,,_aCpos,,,'.T.',,,_aButtons,aParam,,,.T.,,,,,)
 ElseIf nOpc == 5
 	cTanque := LET->LET_NUMERO
 	cBicos := BicoTanque(cTanque)
@@ -87,7 +87,7 @@ ElseIf nOpc == 10
 	EndIf
 	If MsgYesNo('Deseja realmente desativar o tanque ' + AllTrim(cTanque) +;
 	' na data de ' + DTOC(dDatabase) + '?' +;
-	Iif(cBicos <> '',CRLF + CRLF + cBicos,'')
+	Iif(cBicos <> '',CRLF + CRLF + cBicos,''))
 		RecLock('LET', .F.)
 		LET->LET_DTDESA := dDatabase
 		LET->(MsUnlock())

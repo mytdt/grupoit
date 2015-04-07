@@ -113,7 +113,7 @@ Static Function RunReport(Cabec1,Cabec2,Titulo,nLin)
 Local aColsEst, aColsVen, aSaldo, aTanques, aPergs, aRet, aNotas
 Local nI, nC, nPos, nColuna, nCol
 Local nSldAber, nSldFecha, nQtdTotal, nSaldoIni, nSaldoFim, nVolDisp, nVlrTotal
-Local nQuant, nVlrItem, nQtdDia, nQtdAfer, nVlrDia, nVolVend, nQtdFinal, nPerGan, nAferic
+Local nQuant, nVlrItem, nQtdDia, nQtdAfer, nVlrDia, nVolVend, nQtdFinal, nPerGan, nAferic, nCapaci
 Local cFiltro, cFilSL1, cFilSL2, cTqObs, cObs, cEncIni, cEncFin, cLocal, cBico, cDesc
 Local dDataAux
 Local lAppend
@@ -141,7 +141,13 @@ aTanques := {}
 Do While LEI->(!EOF())	
 	nPos := aScan(aTanques,{|x|x[2]==LEI->LEI_TANQUE})
 	If nPos == 0
-		aAdd(aTanques,{LEI->LEI_PROD,LEI->LEI_TANQUE,PadR(LEI->LEI_BICO,2),999999})
+		nCapaci := 0
+		LET->(dbSetOrder(1))
+		LET->(dbGoTop())
+		If LET->(dbSeek( xFilial('LET') + LEI->LEI_TANQUE ))
+			nCapaci := LET->LET_CAPACI
+		EndIf
+		aAdd(aTanques,{LEI->LEI_PROD,LEI->LEI_TANQUE,PadR(LEI->LEI_BICO,2),nCapaci})
 	Else
 		If !(LEI->LEI_BICO $ aTanques[nPos][3])
 			aTanques[nPos][3] += ',' + PadR(LEI->LEI_BICO,2)
