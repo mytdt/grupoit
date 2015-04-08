@@ -1,4 +1,4 @@
-Group 
+Group GrupoIT
    Version=7.0
    VSSDB=
    HasProperties=1
@@ -12,18 +12,21 @@ Group
       OutPut=
    End
    ProjectsCount=1
-   Project Novo Projeto
+   Project Postos
       FoldersCount=2
-      Folder Fontes
-         VSSPath=Fontes
+      Folder LMC
+         VSSPath=Nova Pasta3
          FilesCount=1
          File \TDS\Workspace\mytdt\grupoit\postos\PCLR100.prw
              Type=T
          End
       End
-      Folder Definições
-         VSSPath=Definições
-         FilesCount=0
+      Folder Cadastros
+         VSSPath=Nova Pasta2
+         FilesCount=1
+         File \TDS\Workspace\mytdt\grupoit\postos\MyLET.prw
+             Type=T
+         End
       End
    End
 End
