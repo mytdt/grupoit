@@ -110,11 +110,11 @@ Return
 
 Static Function RunReport(Cabec1,Cabec2,Titulo,nLin)
 
-Local aColsEst, aColsVen, aSaldo, aTanques, aPergs, aRet, aNotas
-Local nI, nC, nPos, nColuna, nCol
+Local aColsEst, aColsVen, aSaldo, aTanques, aPergs, aRet, aNotas, aUltEnc
+Local nI, nC, nPos, nColuna, nCol, nPos2
 Local nSldAber, nSldFecha, nQtdTotal, nSaldoIni, nSaldoFim, nVolDisp, nVlrTotal
 Local nQuant, nVlrItem, nQtdDia, nQtdAfer, nVlrDia, nVolVend, nQtdFinal, nPerGan, nAferic, nCapaci
-Local cFiltro, cFilSL1, cFilSL2, cTqObs, cObs, cEncIni, cEncFin, cLocal, cBico, cDesc
+Local cFiltro, cFilSL1, cFilSL2, cTqObs, cObs, cEncIni, cEncFin, cLocal, cBico, cDesc, cQry
 Local dDataAux
 Local lAppend
 
@@ -342,6 +342,29 @@ While MV_PAR01 <= MV_PAR02
 	SL2->(DbSetFilter({||&cFilSL2}, cFilSL2))
 	SL2->(dbGoTop())
 	
+	cQry := CRLF + " SELECT"
+	cQry += CRLF + "    MAX(L2_TENCFIM) AS L2_TENCFIM"
+	cQry += CRLF + "   ,L2_LOCAL"
+	cQry += CRLF + "   ,L2_TBICO"
+	cQry += CRLF + " FROM " + RetSqlName('SL2')
+	cQry += CRLF + " WHERE D_E_L_E_T_ <> '*'"
+	cQry += CRLF + "   AND L2_FILIAL = '" + xFilial('SL2') + "'"
+	cQry += CRLF + "   AND L2_PRODUTO = '" + AllTrim(MV_PAR03) + "'"
+	cQry += CRLF + "   AND L2_VENDIDO = 'S'"
+	cQry += CRLF + "   AND L2_EMISSAO < '"+Dtos(mv_par01)+"'"
+	cQry += CRLF + " GROUP BY"
+	cQry += CRLF + "    L2_LOCAL"
+	cQry += CRLF + "   ,L2_TBICO"
+	
+	aUltEnc := {}
+	dbUseArea(.T.,'TOPCONN',TCGenQry(,,cQry),'MQRY',.T.)
+	MQRY->(dbGoTop())
+	While !MQRY->(Eof())
+		Aadd(aUltEnc,{MQRY->L2_LOCAL,MQRY->L2_TBICO,MQRY->L2_TENCFIM})
+		MQRY->(dbSkip())
+	EndDo
+	MQRY->(dbCloseArea())
+	
 	aColsVen := {}
 	
 	While SL1->(!EOF())
@@ -354,8 +377,18 @@ While MV_PAR01 <= MV_PAR02
 			If !Empty(SL2->L2_TBICO) .And. SL2->L2_VENDIDO == "S" .And. Alltrim(SL2->L2_PRODUTO)  == Alltrim(MV_PAR03)
 				
 				nPos 	:= Ascan(aColsVen,{|x| x[1]+x[2] == SL2->L2_LOCAL + SL2->L2_TBICO})
+				nPos2 	:= Ascan(aUltEnc,{|x| x[1]+x[2] == SL2->L2_LOCAL + SL2->L2_TBICO})
 				
-				nEncIni := SL2->L2_TENCINI
+				If nPos2 > 0
+					If SL2->L2_TENCINI >= aUltEnc[nPos2][3]
+						nEncIni := SL2->L2_TENCINI
+					Else
+						nEncIni := aUltEnc[nPos2][3]
+					EndIf
+				Else
+					nEncIni := SL2->L2_TENCINI
+				EndIf
+				
 				nEncFin := SL2->L2_TENCFIM
 				cLocal	:= SL2->L2_LOCAL
 				cBico	:= SL2->L2_TBICO
@@ -367,7 +400,7 @@ While MV_PAR01 <= MV_PAR02
 				Else
 					nAferic := 0
 					nQuant  := SL2->L2_QUANT
-					nVlrItem:= SL2->L2_VLRITEM
+					nVlrItem:= (SL2->L2_VLRITEM + SL2->L2_VALDESC - SL2->L2_VALACRS)
 				Endif
 				
 				If nPos > 0
@@ -376,12 +409,12 @@ While MV_PAR01 <= MV_PAR02
 					aColsVen[nPos,4] +=  nQuant
 					aColsVen[nPos,5] +=  nVlrItem
 					
-					If aColsVen[nPos][6] > SL2->L2_TENCINI
-						aColsVen[nPos][6] := SL2->L2_TENCINI
+					If aColsVen[nPos][6] > nEncIni .and. nEncIni > 0
+						aColsVen[nPos][6] := nEncIni
 					EndIf
 					
-					If aColsVen[nPos][7] < SL2->L2_TENCFIM
-						aColsVen[nPos][7] := SL2->L2_TENCFIM
+					If aColsVen[nPos][7] < nEncFin .and. nEncFin > 0
+						aColsVen[nPos][7] := nEncFin
 					EndIf
 					
 				Else
@@ -425,14 +458,15 @@ While MV_PAR01 <= MV_PAR02
 		
 		@ Prow(),062 Psay nVolVend Picture "@E 9,999,999,999.999" + "|"
 		
-		nQtdDia  += aColsVen[n][4]
+		//nQtdDia  += aColsVen[n][4]
+		nQtdDia  += nVolVend
 		nVlrDia  += aColsVen[n][5] 
 		nQtdAfer += aColsVen[n][3]
 				
 	Next n
 	
 	nVlrTotal += nVlrDia
-	nQtdDia := nQtdDia - nQtdAfer
+	//nQtdDia := nQtdDia - nQtdAfer
 	
 	@ Prow()+1,001 Psay "|-----------------------------------------------------------------------------|"
 	@ Prow()+1,001 Psay STR0020 //"|[10] Valor das Vendas (R$)                 |[5.7] Vendas no Dia"
@@ -444,7 +478,7 @@ While MV_PAR01 <= MV_PAR02
 	
 	@ Prow(),046 Psay STR0022 //"[6]Est.Escrit.(4.4-5.7)"
 	@ Prow(),070 Psay nVolDisp-nQtdDia  Picture "@E 99999.999" + "|"
-	
+	                                   `
 	nPerGan := (nSldFecha - (nVolDisp-nQtdDia) )  // Variavel que armazena: Valores de Perdas e Ganhos
 	
 	@ Prow()+1,001 Psay "|-----------------------------------------------------------------------------|"
