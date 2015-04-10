@@ -120,13 +120,22 @@ aHeader:={}
 aFields:= {}
 nOpcx  := 3
 ALTERA := .T.
-INCLUI := .T.                                        
+INCLUI := .T.
+
+#define TANQUE      01
+#define PRODUTO     02
+#define DESCRICAO   03
+#define SALDO_FINAL 04
+#define VEEDER_ROOT 05
+#define DIFERENCA   06
+#define MY_FINAL    07
+
 AADD(aFields,{"Tanque"     ,"L2_LOCAL"  ,"L2_LOCAL"   })
 AADD(aFields,{"Produto"    ,"L2_PRODUTO","L2_PRODUTO" })
-AADD(aFields,{"Descrição"  ,"B1_DESC"   ,"B1_DESC"    })
 AADD(aFields,{"Saldo Final","L2_QUANT"  ,"nSaldoFinal"})
 AADD(aFields,{"Veeder Root","L2_QUANT"  ,"nVeederRoot"})
 AADD(aFields,{"Diferença"  ,"L2_QUANT"  ,"nDiferenca" })
+AADD(aFields,{"Descrição"  ,"B1_DESC"   ,"B1_DESC"    })
 
 For i:=1 To Len(aFields)
 	dbSelectArea("SX3")
@@ -148,20 +157,21 @@ dbSelectArea("SQL")
 dbGoTop()
 
 While !Eof()
-	   AADD(aCols,{"","","",0,0,0,.f.})            
+	   AADD(aCols,Array(MY_FINAL))
+	   i := len(aCols)
                                                    
 	   aSdFim  :=  CalcEst(SQL->CODIGO,SQL->TANQUE,dDataDe+1)
 	   nSldFim := aSdFim[1]
 	   //aSdIni  :=  CalcEst(SQL->CODIGO,SQL->TANQUE,dDataDe)
 	   //nSldIni := aSdIni[1]
 	   dbSelectArea("SQL")                             
-	   aCols[len(aCols)][1] := SQL->TANQUE
-	   aCols[len(aCols)][2] := SQL->CODIGO
-	   aCols[len(aCols)][3] := SQL->PRODUTO
-	   aCols[len(aCols)][4] := nSldFim
-	   //aCols[len(aCols)][5] := 0
-	   //aCols[len(aCols)][6] := 0
-	   //aCols[Len(aCols)][7] := .f.
+	   aCols[i][TANQUE]      := SQL->TANQUE
+	   aCols[i][PRODUTO]     := SQL->CODIGO
+	   aCols[i][SALDO_FINAL] := nSldFim
+	   aCols[i][VEEDER_ROOT] := 0
+	   aCols[i][DIFERENCA]   := 0
+	   aCols[i][DESCRICAO]   := SQL->PRODUTO
+	   aCols[i][MY_FINAL]    := .f.
 	   
 	   nTotal += nSldFim
 	   nCnt := nCnt + 1   
@@ -182,7 +192,8 @@ aR     :={}
 aCGD   :={30,05,120,300}
 aGetCpo:= {"nVeederRoot"}
 	
-cLinhaOk := "((oGetDados:aCols[oGetDados:nAt][6] := Iif(oGetDados:aCols[oGetDados:nAt][5] > 0,oGetDados:aCols[oGetDados:nAt][5] - oGetDados:aCols[oGetDados:nAt][4],0)) , .T.)"
+//cLinhaOk := "((oGetDados:aCols[oGetDados:nAt][6] := Iif(oGetDados:aCols[oGetDados:nAt][5] > 0,oGetDados:aCols[oGetDados:nAt][5] - oGetDados:aCols[oGetDados:nAt][4],0)) , .T.)"
+cLinhaOk := "U_MyTeste()"
 cTudoOk  := ".t."
 	
 lRetMod2:=Modelo2(cTitulo,aC,aR,aCGD,nOpcx,cLinhaOk,cTudoOk,aGetCpo,,,,aTela,.T.)
@@ -198,19 +209,19 @@ If lRetMod2
     lReg := .f.
 	For i:=1 to Len(aCols)
 		If !aCols[i][nUsado+1]
-		    If aCols[i][6] <> 0
+		    If aCols[i][DIFERENCA] <> 0
 				cNumseq := ProxNum()    
-				nQuant  := aCols[i][6] * If(aCols[i][6]<0,-1,1)
+				nQuant  := aCols[i][DIFERENCA] * If(aCols[i][DIFERENCA]<0,-1,1)
 				dbSelectArea("SB1")
-				dbSeek(xFilial("SB1")+aCols[i][2])
+				dbSeek(xFilial("SB1")+aCols[i][PRODUTO])
 				dbSelectArea("SD3")
 				RecLock("SD3",.T.)
 				Replace	D3_FILIAL  With cFilAnt,;
-						D3_COD     With aCols[i][2],;
+						D3_COD     With aCols[i][PRODUTO],;
 						D3_DOC     With cDoc,;
 						D3_EMISSAO With dDataDe,;
 						D3_GRUPO   With SB1->B1_GRUPO,;
-						D3_LOCAL   With aCols[i][1],;
+						D3_LOCAL   With aCols[i][TANQUE],;
 						D3_UM      With SB1->B1_UM,;
 						D3_NUMSEQ  With cNumSeq,;
 						D3_SEGUM   With SB1->B1_SEGUM,;
@@ -220,7 +231,7 @@ If lRetMod2
 						D3_LOCALIZ With SB2->B2_LOCALIZ,;
 						D3_USUARIO With SubStr(cUsuario,7,15),;
 						D3_DTVALID With dDataDe      
-						If aCols[i][6] < 0
+						If aCols[i][DIFERENCA] < 0
 							Replace D3_TM With "999"
 							Replace D3_CF With "RE0"        
 							cCH := "E9"
@@ -297,3 +308,14 @@ dbSetOrder(aSvAlias[2])
 dbGoto(aSvAlias[3])
 
 Return(nil)
+
+User Function MyTeste()
+
+x:=0
+If oGetDados:oBrowse:aCols[oGetDados:nAt][VEEDER_ROOT] > 0
+	oGetDados:oBrowse:aCols[oGetDados:nAt][DIFERENCA] := oGetDados:aCols[oGetDados:nAt][VEEDER_ROOT] - oGetDados:aCols[oGetDados:nAt][SALDO_FINAL]
+Else
+	oGetDados:oBrowse:aCols[oGetDados:nAt][DIFERENCA] := 0
+EndIf
+
+Return .T.
