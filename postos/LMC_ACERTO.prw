@@ -122,12 +122,12 @@ nOpcx  := 3
 ALTERA := .T.
 INCLUI := .T.
 
-#define TANQUE      01
-#define PRODUTO     02
-#define DESCRICAO   03
-#define SALDO_FINAL 04
-#define VEEDER_ROOT 05
-#define DIFERENCA   06
+#define MY_TANQUE      01
+#define MY_PRODUTO     02
+#define MY_DESCRICAO   03
+#define MY_SALDO_FINAL 04
+#define MY_VEEDER_ROOT 05
+#define MY_DIFERENCA   06
 #define MY_FINAL    07
 
 AADD(aFields,{"Tanque"     ,"L2_LOCAL"  ,"L2_LOCAL"   })
@@ -160,17 +160,17 @@ While !Eof()
 	   AADD(aCols,Array(MY_FINAL))
 	   i := len(aCols)
                                                    
-	   aSdFim  :=  CalcEst(SQL->CODIGO,SQL->TANQUE,dDataDe+1)
+	   aSdFim  := CalcEst(SQL->CODIGO,SQL->TANQUE,dDataDe+1)
 	   nSldFim := aSdFim[1]
 	   //aSdIni  :=  CalcEst(SQL->CODIGO,SQL->TANQUE,dDataDe)
 	   //nSldIni := aSdIni[1]
 	   dbSelectArea("SQL")                             
-	   aCols[i][TANQUE]      := SQL->TANQUE
-	   aCols[i][PRODUTO]     := SQL->CODIGO
-	   aCols[i][SALDO_FINAL] := nSldFim
-	   aCols[i][VEEDER_ROOT] := 0
-	   aCols[i][DIFERENCA]   := 0
-	   aCols[i][DESCRICAO]   := SQL->PRODUTO
+	   aCols[i][MY_TANQUE]      := SQL->TANQUE
+	   aCols[i][MY_PRODUTO]     := SQL->CODIGO
+	   aCols[i][MY_SALDO_FINAL] := nSldFim
+	   aCols[i][MY_VEEDER_ROOT] := 0
+	   aCols[i][MY_DIFERENCA]   := 0
+	   aCols[i][MY_DESCRICAO]   := SQL->PRODUTO
 	   aCols[i][MY_FINAL]    := .f.
 	   
 	   nTotal += nSldFim
@@ -201,7 +201,7 @@ lRetMod2:=Modelo2(cTitulo,aC,aR,aCGD,nOpcx,cLinhaOk,cTudoOk,aGetCpo,,,,aTela,.T.
 If lRetMod2
 	For i:=1 to Len(aCols)
 		If !aCols[i][nUsado+1]
-			Alert(aCols[i][6])
+			Alert(aCols[i][MY_DIFERENCA])
 		EndIf
 	Next i
 /*
@@ -209,19 +209,19 @@ If lRetMod2
     lReg := .f.
 	For i:=1 to Len(aCols)
 		If !aCols[i][nUsado+1]
-		    If aCols[i][DIFERENCA] <> 0
+		    If aCols[i][MY_DIFERENCA] <> 0
 				cNumseq := ProxNum()    
-				nQuant  := aCols[i][DIFERENCA] * If(aCols[i][DIFERENCA]<0,-1,1)
+				nQuant  := aCols[i][MY_DIFERENCA] * If(aCols[i][MY_DIFERENCA]<0,-1,1)
 				dbSelectArea("SB1")
-				dbSeek(xFilial("SB1")+aCols[i][PRODUTO])
+				dbSeek(xFilial("SB1")+aCols[i][MY_PRODUTO])
 				dbSelectArea("SD3")
 				RecLock("SD3",.T.)
 				Replace	D3_FILIAL  With cFilAnt,;
-						D3_COD     With aCols[i][PRODUTO],;
+						D3_COD     With aCols[i][MY_PRODUTO],;
 						D3_DOC     With cDoc,;
 						D3_EMISSAO With dDataDe,;
 						D3_GRUPO   With SB1->B1_GRUPO,;
-						D3_LOCAL   With aCols[i][TANQUE],;
+						D3_LOCAL   With aCols[i][MY_TANQUE],;
 						D3_UM      With SB1->B1_UM,;
 						D3_NUMSEQ  With cNumSeq,;
 						D3_SEGUM   With SB1->B1_SEGUM,;
@@ -231,7 +231,7 @@ If lRetMod2
 						D3_LOCALIZ With SB2->B2_LOCALIZ,;
 						D3_USUARIO With SubStr(cUsuario,7,15),;
 						D3_DTVALID With dDataDe      
-						If aCols[i][DIFERENCA] < 0
+						If aCols[i][MY_DIFERENCA] < 0
 							Replace D3_TM With "999"
 							Replace D3_CF With "RE0"        
 							cCH := "E9"
@@ -312,10 +312,10 @@ Return(nil)
 User Function MyTeste()
 
 x:=0
-If oGetDados:oBrowse:aCols[oGetDados:nAt][VEEDER_ROOT] > 0
-	oGetDados:oBrowse:aCols[oGetDados:nAt][DIFERENCA] := oGetDados:aCols[oGetDados:nAt][VEEDER_ROOT] - oGetDados:aCols[oGetDados:nAt][SALDO_FINAL]
+If oGetDados:oBrowse:aCols[oGetDados:nAt][MY_VEEDER_ROOT] > 0
+	oGetDados:oBrowse:aCols[oGetDados:nAt][MY_DIFERENCA] := oGetDados:aCols[oGetDados:nAt][MY_VEEDER_ROOT] - oGetDados:aCols[oGetDados:nAt][MY_SALDO_FINAL]
 Else
-	oGetDados:oBrowse:aCols[oGetDados:nAt][DIFERENCA] := 0
+	oGetDados:oBrowse:aCols[oGetDados:nAt][MY_DIFERENCA] := 0
 EndIf
 
 Return .T.
