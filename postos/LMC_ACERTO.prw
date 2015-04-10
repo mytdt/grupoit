@@ -192,8 +192,18 @@ aR     :={}
 aCGD   :={30,05,120,300}
 aGetCpo:= {"nVeederRoot"}
 	
-//cLinhaOk := "((oGetDados:aCols[oGetDados:nAt][6] := Iif(oGetDados:aCols[oGetDados:nAt][5] > 0,oGetDados:aCols[oGetDados:nAt][5] - oGetDados:aCols[oGetDados:nAt][4],0)) , .T.)"
-cLinhaOk := "U_MyTeste()"
+cLinhaOk := "("
+cLinhaOk +=   " _oMyGetD := CallMod2Obj() "
+cLinhaOk +=   ","
+cLinhaOk +=   " oMyGetD:aCols[_oMyGetD:nAt][MY_DIFERENCA] := Iif("
+cLinhaOk +=     "_oMyGetD:aCols[_oMyGetD:nAt][MY_VEEDER_ROOT] > 0,"
+cLinhaOk +=       "_oMyGetD:aCols[_oMyGetD:nAt][MY_VEEDER_ROOT] - _oMyGetD:aCols[_oMyGetD:nAt][MY_SALDO_FINAL],"
+cLinhaOk +=       "0"
+cLinhaOk +=     ") "
+cLinhaOk +=   ","
+cLinhaOk +=   " .T."
+cLinhaOk += ")"
+
 cTudoOk  := ".t."
 	
 lRetMod2:=Modelo2(cTitulo,aC,aR,aCGD,nOpcx,cLinhaOk,cTudoOk,aGetCpo,,,,aTela,.T.)
@@ -308,14 +318,3 @@ dbSetOrder(aSvAlias[2])
 dbGoto(aSvAlias[3])
 
 Return(nil)
-
-User Function MyTeste()
-
-x:=0
-If oGetDados:oBrowse:aCols[oGetDados:nAt][MY_VEEDER_ROOT] > 0
-	oGetDados:oBrowse:aCols[oGetDados:nAt][MY_DIFERENCA] := oGetDados:aCols[oGetDados:nAt][MY_VEEDER_ROOT] - oGetDados:aCols[oGetDados:nAt][MY_SALDO_FINAL]
-Else
-	oGetDados:oBrowse:aCols[oGetDados:nAt][MY_DIFERENCA] := 0
-EndIf
-
-Return .T.
