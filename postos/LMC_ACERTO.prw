@@ -39,6 +39,7 @@ If Select("SQL") > 0
    SQL->(dbCloseArea())
 EndIf 
 
+/*
 cQry := "SELECT L2_EMISSAO EMISSAO,L2_LOCAL TANQUE,L2_DESCRI PRODUTO,SUM(L2_QUANT) QUANT,SUM(L2_TOTIMP) QTD_LMC,SUM(L2_VLIMPOR) DIFERENCA,L2_PRODUTO CODIGO " + chr(10)
 cQry += "FROM "+RetSqlName("SL2")+" WHERE " + chr(10)
 cQry += "L2_FILIAL  = '"+cFilAnt+"' AND " + chr(10) 
@@ -48,6 +49,7 @@ cQry += "L2_PRODUTO	BETWEEN '"+cPrdDe +"' AND '"+cPrdAte +"' AND " + chr(10)
 cQry += "LEN(L2_TBICO) > 0 AND D_E_L_E_T_ <> '*' " + chr(10) 
 cQry += "GROUP BY L2_EMISSAO,L2_DESCRI,L2_LOCAL,L2_PRODUTO " + chr(10)  
 cQry += "ORDER BY L2_EMISSAO,L2_DESCRI,L2_LOCAL"  
+*/
 
 cQry := CRLF + " SELECT"
 cQry += CRLF + "    L2_EMISSAO EMISSAO"
@@ -180,18 +182,23 @@ aR     :={}
 aCGD   :={30,05,120,300}
 aGetCpo:= {"nVeederRoot"}
 	
-//cLinhaOk := "((aCols[][6] := aCols[][5] - aCols[][4]) , .T.)"
-cLinhaOk  := "U_MyTeste()"
+cLinhaOk := "((oGetDados:aCols[oGetDados:nAt][6] := Iif(oGetDados:aCols[oGetDados:nAt][5] > 0,oGetDados:aCols[oGetDados:nAt][5] - oGetDados:aCols[oGetDados:nAt][4],0)) , .T.)"
 cTudoOk  := ".t."
 	
 lRetMod2:=Modelo2(cTitulo,aC,aR,aCGD,nOpcx,cLinhaOk,cTudoOk,aGetCpo,,,,aTela,.T.)
 	
 If lRetMod2
+	For i:=1 to Len(aCols)
+		If !aCols[i][nUsado+1]
+			Alert(aCols[i][6])
+		EndIf
+	Next i
+/*
     cDoc := GetSx8Num("SD3")
     lReg := .f.
 	For i:=1 to Len(aCols)
 		If !aCols[i][nUsado+1]
-		    If aCols[i][5] <> 0
+		    If aCols[i][6] <> 0
 				cNumseq := ProxNum()    
 				nQuant  := aCols[i][6] * If(aCols[i][6]<0,-1,1)
 				dbSelectArea("SB1")
@@ -249,6 +256,7 @@ If lRetMod2
     Else
 	   RollBackSx8()
     EndIf   
+    */
 Endif
 
 dbSelectArea(vSvAlias[1])
@@ -289,7 +297,3 @@ dbSetOrder(aSvAlias[2])
 dbGoto(aSvAlias[3])
 
 Return(nil)
-
-User Function MyTeste()
-x:=0
-Return .T.
