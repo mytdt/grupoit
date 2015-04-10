@@ -191,19 +191,8 @@ AADD(aC,{"nTotal"  ,{15,075}," Total","@E 99,999,999,999,999.999",,,lCab})
 aR     :={}
 aCGD   :={30,05,120,300}
 aGetCpo:= {"nVeederRoot"}
-	
-cLinhaOk := "("
-cLinhaOk +=   " _oMyGetD := CallMod2Obj() "
-cLinhaOk +=   ","
-cLinhaOk +=   " oMyGetD:aCols[_oMyGetD:nAt][MY_DIFERENCA] := Iif("
-cLinhaOk +=     "_oMyGetD:aCols[_oMyGetD:nAt][MY_VEEDER_ROOT] > 0,"
-cLinhaOk +=       "_oMyGetD:aCols[_oMyGetD:nAt][MY_VEEDER_ROOT] - _oMyGetD:aCols[_oMyGetD:nAt][MY_SALDO_FINAL],"
-cLinhaOk +=       "0"
-cLinhaOk +=     ") "
-cLinhaOk +=   ","
-cLinhaOk +=   " .T."
-cLinhaOk += ")"
 
+cLinhaOk := "CalcDif()"
 cTudoOk  := ".t."
 	
 lRetMod2:=Modelo2(cTitulo,aC,aR,aCGD,nOpcx,cLinhaOk,cTudoOk,aGetCpo,,,,aTela,.T.)
@@ -318,3 +307,18 @@ dbSetOrder(aSvAlias[2])
 dbGoto(aSvAlias[3])
 
 Return(nil)
+
+/* ------------ */
+
+Static Function CalcDif()
+
+Local lRet := .T.
+Local oGetD := CallMod2Obj()
+
+If oGetD:aCols[oGetD:nAt][MY_VEEDER_ROOT] > 0
+	oGetD:aCols[oGetD:nAt][MY_DIFERENCA] := oGetD:aCols[oGetD:nAt][MY_VEEDER_ROOT] - oGetD:aCols[oGetD:nAt][MY_SALDO_FINAL]
+Else
+	oGetD:aCols[oGetD:nAt][MY_DIFERENCA] := 0
+EndIf
+
+Return lRet
