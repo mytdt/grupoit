@@ -16,8 +16,11 @@ Group GrupoIT
       FoldersCount=2
       Folder LMC
          VSSPath=Nova Pasta3
-         FilesCount=1
+         FilesCount=2
          File \TDS\Workspace\mytdt\grupoit\postos\PCLR100.prw
+             Type=T
+         End
+         File \TDS\Workspace\mytdt\grupoit\postos\LMC_ACERTO.prw
              Type=T
          End
       End
