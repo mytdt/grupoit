@@ -124,11 +124,11 @@ INCLUI := .T.
 
 #define MY_TANQUE      01
 #define MY_PRODUTO     02
-#define MY_DESCRICAO   03
-#define MY_SALDO_FINAL 04
-#define MY_VEEDER_ROOT 05
-#define MY_DIFERENCA   06
-#define MY_FINAL    07
+#define MY_SALDO_FINAL 03
+#define MY_VEEDER_ROOT 04
+#define MY_DIFERENCA   05
+#define MY_DESCRICAO   06
+#define MY_FINAL       07
 
 AADD(aFields,{"Tanque"     ,"L2_LOCAL"  ,"L2_LOCAL"   })
 AADD(aFields,{"Produto"    ,"L2_PRODUTO","L2_PRODUTO" })
