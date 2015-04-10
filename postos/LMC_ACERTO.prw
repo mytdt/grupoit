@@ -192,18 +192,12 @@ aR     :={}
 aCGD   :={30,05,120,300}
 aGetCpo:= {"nVeederRoot"}
 
-cLinhaOk := "CalcDif()"
-cTudoOk  := ".t."
+cLinhaOk := "U_MyDifLMC()"
+cTudoOk  := ".T."
 	
 lRetMod2:=Modelo2(cTitulo,aC,aR,aCGD,nOpcx,cLinhaOk,cTudoOk,aGetCpo,,,,aTela,.T.)
 	
 If lRetMod2
-	For i:=1 to Len(aCols)
-		If !aCols[i][nUsado+1]
-			Alert(aCols[i][MY_DIFERENCA])
-		EndIf
-	Next i
-/*
     cDoc := GetSx8Num("SD3")
     lReg := .f.
 	For i:=1 to Len(aCols)
@@ -265,8 +259,7 @@ If lRetMod2
        ConfirmSX8()    
     Else
 	   RollBackSx8()
-    EndIf   
-    */
+    EndIf
 Endif
 
 dbSelectArea(vSvAlias[1])
@@ -310,15 +303,17 @@ Return(nil)
 
 /* ------------ */
 
-Static Function CalcDif()
+User Function MyDifLMC()
 
 Local lRet := .T.
 Local oGetD := CallMod2Obj()
 
-If oGetD:aCols[oGetD:nAt][MY_VEEDER_ROOT] > 0
-	oGetD:aCols[oGetD:nAt][MY_DIFERENCA] := oGetD:aCols[oGetD:nAt][MY_VEEDER_ROOT] - oGetD:aCols[oGetD:nAt][MY_SALDO_FINAL]
+If aCols[oGetD:oBrowse:nAt][MY_VEEDER_ROOT] > 0
+	aCols[oGetD:oBrowse:nAt][MY_DIFERENCA] := aCols[oGetD:oBrowse:nAt][MY_VEEDER_ROOT] - aCols[oGetD:oBrowse:nAt][MY_SALDO_FINAL]
 Else
-	oGetD:aCols[oGetD:nAt][MY_DIFERENCA] := 0
+	aCols[oGetD:oBrowse:nAt][MY_DIFERENCA] := 0
 EndIf
+
+oGetD:oBrowse:Refresh()
 
 Return lRet
