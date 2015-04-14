@@ -121,7 +121,10 @@ cQry += CRLF + " AND B1_COD = L2_PRODUTO"
 cQry += CRLF + " WHERE SL2.D_E_L_E_T_ <> '*'"
 cQry += CRLF + "   AND L2_FILIAL = '" + xFilial('SL2') + "'"
 cQry += CRLF + "   AND L2_VENDIDO = 'S'"
-cQry += CRLF + "   AND L2_EMISSAO BETWEEN '" + MV_PAR01 + "' AND '" + MV_PAR02 + "'"
+cQry += CRLF + "   AND LEN(L2_TBICO) > 0"
+cQry += CRLF + "   AND L2_TENCINI > 0"
+cQry += CRLF + "   AND L2_TENCFIM > 0"
+cQry += CRLF + "   AND L2_EMISSAO BETWEEN '" + DTOS(MV_PAR01) + "' AND '" + DTOS(MV_PAR02) + "'"
 cQry += CRLF + " GROUP BY"
 cQry += CRLF + "   LEB_SERIE"
 cQry += CRLF + "  ,L2_TBICO"
@@ -136,9 +139,9 @@ MQRY->(dbGoTop())
 aAdd(_aExcel, {'1 - Movimentação'})
 aAdd(_aExcel, {'No. de Série da Bomba','No. do Bico Abast.','Combustível','Inicial','Final','Sem Intervenção','Com Intervenção'})
 While !MQRY->(Eof())
-	nInicial  := MQRY->INICIAL
-	nFinal    := MQRY->FINAL
-	nAfericao := MQRY->AFERICAO
+	nInicial  := Int(MQRY->INICIAL)
+	nFinal    := Int(MQRY->FINAL)
+	nAfericao := Int(MQRY->AFERICAO)
 	nSemInter := nFinal - nInicial
 	nComInter := nSemInter - nAfericao
 	aAdd(_aExcel, {AllTrim(MQRY->BOMBA), AllTrim(MQRY->BICO), /*Combustivel(MQRY->COMBUSTIVEL)*/'', nInicial, nFinal, nSemInter, nComInter})
