@@ -13,7 +13,7 @@ Group GrupoIT
    End
    ProjectsCount=1
    Project Postos
-      FoldersCount=2
+      FoldersCount=3
       Folder LMC
          VSSPath=Nova Pasta3
          FilesCount=2
@@ -28,6 +28,13 @@ Group GrupoIT
          VSSPath=Nova Pasta2
          FilesCount=1
          File \TDS\Workspace\mytdt\grupoit\postos\MyLET.prw
+             Type=T
+         End
+      End
+      Folder Relatorios
+         VSSPath=Nova Pasta3
+         FilesCount=1
+         File \TDS\Workspace\mytdt\grupoit\postos\relatorios\MyDIEF2P.prw
              Type=T
          End
       End
