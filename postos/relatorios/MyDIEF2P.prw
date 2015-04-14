@@ -39,12 +39,12 @@ Local cAux, cRet
 
 Private _aExcel := {}
 
-aAdd(aExcel, {cTitulo})
-aAdd(aExcel, {'Relatório emitido em '+DTOC(Date())+' às '+Time()+' por '+AllTrim(cUsername)})
-aAdd(aExcel, {'Período: '+DTOC(MV_PAR01)+' até '+DTOC(MV_PAR02)})
-aAdd(aExcel, {''})
-aAdd(aExcel, {'Empresa: '+cEmpAnt+'/'+cFilAnt+'-'+AllTrim(SM0->M0_NOME)+' / '+AllTrim(SM0->M0_FILIAL)})
-aAdd(aExcel, {''})
+aAdd(_aExcel, {cTitulo})
+aAdd(_aExcel, {'Relatório emitido em '+DTOC(Date())+' às '+Time()+' por '+AllTrim(cUsername)})
+aAdd(_aExcel, {'Período: '+DTOC(MV_PAR01)+' até '+DTOC(MV_PAR02)})
+aAdd(_aExcel, {''})
+aAdd(_aExcel, {'Empresa: '+cEmpAnt+'/'+cFilAnt+'-'+AllTrim(SM0->M0_NOME)+' / '+AllTrim(SM0->M0_FILIAL)})
+aAdd(_aExcel, {''})
 
 Secao1() // 1 - Movimentação
 
@@ -53,7 +53,7 @@ If cAux <> ''
 	cAux := SubStr(cAux, 1, RAt('\', cAux)) + cArq
 	cAux := cAux + '-' + DTOS(Date()) + '-' + StrTran(Time(), ':', '') + '.csv'
 	
-	cRet := U_MyArrCsv(aExcel, cAux, Nil, cTitulo)
+	cRet := U_MyArrCsv(_aExcel, cAux, Nil, cTitulo)
 	If cRet <> ''
 		Alert(cRet)
 	EndIf
