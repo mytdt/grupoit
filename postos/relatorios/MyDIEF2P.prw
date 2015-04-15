@@ -189,8 +189,11 @@ dbUseArea(.T.,'TOPCONN',TCGenQry(,,cQry),'MQRY',.T.)
 MQRY->(dbGoTop())
 
 While !MQRY->(Eof())
-	nQtdInicial := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR01)
-	nQtdFinal   := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR02+1)
+	aSaldo      := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR01)
+	nQtdInicial := aSaldo[1]
+	
+	aSaldo      := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR02+1)
+	nQtdFinal   := aSaldo[1]
 	
 	nPos := aScan(aTanques, {|x| x[1] == AllTrim(MQRY->TANQUE) .and. x[2] == MQRY->COMBUSTIVEL })
 	If nPos > 0
