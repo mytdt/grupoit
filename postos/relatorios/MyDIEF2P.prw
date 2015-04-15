@@ -50,6 +50,7 @@ Secao1() // 1 - Movimentação
 Secao2() // 2 - Estoque Físico de Abertura
 Secao3() // 3 - Entradas do Mês
 Secao4() // 4 - Vendas do Mês
+Secao5() // 5 - Informações sobre Tanques
 
 cAux := AllTrim(cGetFile('CSV (*.csv)|*.csv', 'Selecione o diretório onde será salvo o relatório', 1, 'C:\', .T., nOR( GETF_LOCALHARD, GETF_LOCALFLOPPY, GETF_NETWORKDRIVE, GETF_RETDIRECTORY ), .F., .T.))
 If cAux <> ''
@@ -165,6 +166,7 @@ Local cQry := ""
 Local nQtdInicial, nQtdFinal, nPos
 Local nTamCod := TamSX3('B1_COD')[1]
 Local nTamTq := TamSX3('L2_LOCAL')[1]
+Local aSaldo := {}
 Local aTanques := {}
 
 cQry := CRLF + " SELECT"
@@ -225,7 +227,6 @@ Return Nil
 Static Function Secao3()
 
 Local cQry := ""
-Local nInicial, nFinal, nAfericao, nSemInter, nComInter
 
 cQry := CRLF + " SELECT"
 cQry += CRLF + "   A2_CGC AS CNPJ"
@@ -300,11 +301,10 @@ Return Nil
 Static Function Secao4()
 
 Local cQry := ""
-Local nInicial, nFinal, nAfericao, nSemInter, nComInter
 
 cQry := CRLF + " SELECT"
 cQry += CRLF + "  '' AS COMBUSTIVEL"
-//cQry += CRLF + "  ,B1_TCOMBUS AS COMBUSTIVEL"
+//cQry += CRLF + "  B1_TCOMBUS AS COMBUSTIVEL"
 cQry += CRLF + "  ,SUM(L2_VLRITEM) AS VALOR"
 cQry += CRLF + "  ,SUM(L2_VALDESC) AS DESCONTO"
 cQry += CRLF + "  ,SUM(L2_VALACRS) AS ACRESCIMO"
@@ -336,6 +336,50 @@ aAdd(_aExcel, {'4 - Vendas do Mês'})
 aAdd(_aExcel, {'Combustível','Valor Contábil da Vendas','Quantidade Total'})
 While !MQRY->(Eof())
 	aAdd(_aExcel, {Combustivel(MQRY->COMBUSTIVEL), Round(MQRY->VALOR + MQRY->DESCONTO - MQRY->ACRESCIMO,2), Int(MQRY->QUANTIDADE)})
+	
+	MQRY->(dbSkip())
+EndDo
+MQRY->(dbCloseArea())
+aAdd(_aExcel, {''})
+
+Return Nil
+
+/* ------------------- */
+
+Static Function Secao5()
+
+Local cQry := ""
+
+cQry := CRLF + " SELECT"
+cQry += CRLF + "  LET_NUMERO AS TANQUE"
+cQry += CRLF + " ,LET_CAPACI AS CAPACIDADE"
+cQry += CRLF + " ,(SELECT"
+cQry += CRLF + "      COUNT(L2_TBICO)"
+cQry += CRLF + "   FROM " + RetSqlName('SL2') + " SL2"
+cQry += CRLF + "   LEFT JOIN " + RetSqlName('LEI') + " LEI"
+cQry += CRLF + "   ON  LEI.D_E_L_E_T_ <> '*'"
+cQry += CRLF + "   AND LEI_FILIAL = '" + xFilial('LEI') + "'"
+cQry += CRLF + "   AND LEI_BICO = L2_TBICO"
+cQry += CRLF + "   WHERE SL2.D_E_L_E_T_ <> '*'"
+cQry += CRLF + "     AND L2_FILIAL = '" + xFilial('SL2') + "'"
+cQry += CRLF + "     AND L2_VENDIDO = 'S'"
+cQry += CRLF + "     AND L2_EMISSAO BETWEEN '" + DTOS(MV_PAR01) + "' AND '" + DTOS(MV_PAR02) + "'"
+cQry += CRLF + "     AND LEI_TANQUE = LET_NUMERO"
+cQry += CRLF + "   ) AS BICOS"
+cQry += CRLF + " FROM " + RetSqlName('LET') + " LET"
+cQry += CRLF + " WHERE LET.D_E_L_E_T_ <> '*'"
+cQry += CRLF + "   AND LET_FILIAL = '" + xFilial('LET') + "'"
+cQry += CRLF + "   AND LET_DTDESA < '" + DTOS(MV_PAR01) + "'"
+cQry += CRLF + " ORDER BY"
+cQry += CRLF + "  LET_NUMERO"
+
+dbUseArea(.T.,'TOPCONN',TCGenQry(,,cQry),'MQRY',.T.)
+MQRY->(dbGoTop())
+
+aAdd(_aExcel, {'5 - Informações sobre Tanques'})
+aAdd(_aExcel, {'Tanques','Capacidade Nominal (Litros)','No. de Bicos no Início do Mês','No. de Bicos no Final do Mês'})
+While !MQRY->(Eof())
+	aAdd(_aExcel, {AllTrim(MQRY->TANQUE), MQRY->CAPACIDADE, MQRY->BICOS, MQRY->BICOS})
 	
 	MQRY->(dbSkip())
 EndDo
