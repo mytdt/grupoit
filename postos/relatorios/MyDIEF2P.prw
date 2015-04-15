@@ -154,6 +154,64 @@ Return Nil
 
 /* ------------------- */
 
+Static Function Secao2()
+
+Local cQry := ""
+Local nQtdInicial, nQtdFinal, nPos
+Local nTamCod := TamSX3('B1_COD')[1]
+Local nTamTq := TamSX3('L2_LOCAL')[1]
+Local aTanques := {}
+
+cQry := CRLF + " SELECT"
+cQry += CRLF + "   LET_NUMERO AS TANQUE"
+cQry += CRLF + "  ,LET_PRODUT AS PRODUTO"
+//cQry += CRLF + "  ,B1_TCOMBUS AS COMBUSTIVEL"
+cQry += CRLF + " FROM " + RetSqlName('LET') + " LET"
+cQry += CRLF + " LEFT JOIN " + RetSqlName('SB1') + " SB1"
+cQry += CRLF + " ON  SB1.D_E_L_E_T_ <> '*'"
+cQry += CRLF + " AND B1_FILIAL = '" + xFilial('SB1') + "'"
+cQry += CRLF + " AND B1_COD = LET_PRODUT"
+cQry += CRLF + " WHERE LET.D_E_L_E_T_ <> '*'"
+cQry += CRLF + "   AND LET_FILIAL = '" + xFilial('SL2') + "'"
+cQry += CRLF + " GROUP BY"
+cQry += CRLF + "   LET_NUMERO"
+cQry += CRLF + "  ,LET_PRODUT"
+//cQry += CRLF + "  ,B1_TCOMBUS"
+cQry += CRLF + " ORDER BY"
+cQry += CRLF + "   LET_NUMERO"
+cQry += CRLF + "  ,LET_PRODUT"
+//cQry += CRLF + "  ,B1_TCOMBUS"
+
+dbUseArea(.T.,'TOPCONN',TCGenQry(,,cQry),'MQRY',.T.)
+MQRY->(dbGoTop())
+
+While !MQRY->(Eof())
+	nQtdInicial := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR01)
+	nQtdFinal   := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR02+1)
+	
+	nPos := aScan(aTanques, {|x| x[1] == AllTrim(MQRY->TANQUE) .and. x[2] == MQRY->COMBUSTIVEL })
+	If nPos > 0
+		aTanques[nPos][3] += nQtdInicial
+		aTanques[nPos][4] += nQtdFinal
+	Else
+		aAdd(aTanques, {AllTrim(MQRY->TANQUE), MQRY->COMBUSTIVEL, nQtdInicial, nQtdFinal})
+	EndIf
+	
+	MQRY->(dbSkip())
+EndDo
+MQRY->(dbCloseArea())
+
+aAdd(_aExcel, {'2 - Estoque Físico de Abertura'})
+aAdd(_aExcel, {'Tanque','Combustível','Quantidade Inicial','Quantidade Final'})
+nTam := Len(aTanques)
+For nI := 1 to nTam
+	aAdd(_aExcel, {aTanques[nI][1], /*Combustivel(aTanques[nI][2])*/'', aTanques[nI][3], aTanques[nI][4]})
+Next nI
+
+Return Nil
+
+/* ------------------- */
+
 Static Function CriaSX1(cPerg,cCFPad)
 
 Local nTamGrp := Len(SX1->X1_GRUPO)
