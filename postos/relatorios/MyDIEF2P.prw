@@ -48,6 +48,7 @@ aAdd(_aExcel, {''})
 
 Secao1() // 1 - Movimentação
 Secao2() // 2 - Estoque Físico de Abertura
+Secao3() // 3 - Entradas do Mês
 
 cAux := AllTrim(cGetFile('CSV (*.csv)|*.csv', 'Selecione o diretório onde será salvo o relatório', 1, 'C:\', .T., nOR( GETF_LOCALHARD, GETF_LOCALFLOPPY, GETF_NETWORKDRIVE, GETF_RETDIRECTORY ), .F., .T.))
 If cAux <> ''
@@ -211,8 +212,79 @@ aAdd(_aExcel, {'2 - Estoque Físico de Abertura'})
 aAdd(_aExcel, {'Tanque','Combustível','Quantidade Inicial','Quantidade Final'})
 nTam := Len(aTanques)
 For nI := 1 to nTam
-	aAdd(_aExcel, {aTanques[nI][1], Combustivel(aTanques[nI][2]), aTanques[nI][3], aTanques[nI][4]})
+	aAdd(_aExcel, {aTanques[nI][1], Combustivel(aTanques[nI][2]), Int(aTanques[nI][3]), Int(aTanques[nI][4])})
 Next nI
+
+Return Nil
+
+/* ------------------- */
+
+Static Function Secao3()
+
+Local cQry := ""
+Local nInicial, nFinal, nAfericao, nSemInter, nComInter
+
+cQry := CRLF + " SELECT"
+cQry += CRLF + "   A2_CGC AS CNPJ"
+cQry += CRLF + "  ,'' AS COMBUSTIVEL"
+//cQry += CRLF + "  ,B1_TCOMBUS AS COMBUSTIVEL"
+cQry += CRLF + "  ,D1_DOC AS NOTAFISCAL"
+cQry += CRLF + "  ,D1_EMISSAO AS EMISSAO"
+cQry += CRLF + "  ,D1_LOCAL AS TANQUE"
+cQry += CRLF + "  ,SUM(D1_QUANT) AS QUANTIDADE"
+cQry += CRLF + "  ,SUM(D1_VUNIT)/COUNT(D1_VUNIT) AS PRECO"
+cQry += CRLF + "  ,F1_VALBRUT AS VALORTOTAL"
+cQry += CRLF + " FROM " + RetSqlName('SD1') + " SD1"
+cQry += CRLF + " LEFT JOIN " + RetSqlName('SF1') + " SF1"
+cQry += CRLF + " ON  SF1.D_E_L_E_T_ <> '*'"
+cQry += CRLF + " AND F1_FILIAL = '" + xFilial('SF1') + "'"
+cQry += CRLF + " AND F1_DOC = D1_DOC"
+cQry += CRLF + " AND F1_SERIE = D1_SERIE"
+cQry += CRLF + " AND F1_FORNECE = D1_FORNECE"
+cQry += CRLF + " AND F1_LOJA = D1_LOJA"
+cQry += CRLF + " AND F1_EMISSAO = D1_EMISSAO"
+cQry += CRLF + " LEFT JOIN " + RetSqlName('SA2') + " SA2"
+cQry += CRLF + " ON  SA2.D_E_L_E_T_ <> '*'"
+cQry += CRLF + " AND A2_FILIAL = '" + xFilial('SA2') + "'"
+cQry += CRLF + " AND A2_COD = D1_FORNECE"
+cQry += CRLF + " AND A2_LOJA = D1_LOJA"
+cQry += CRLF + " LEFT JOIN " + RetSqlName('SB1') + " SB1"
+cQry += CRLF + " ON  SB1.D_E_L_E_T_ <> '*'"
+cQry += CRLF + " AND B1_FILIAL = '" + xFilial('SB1') + "'"
+cQry += CRLF + " AND B1_COD = D1_COD"
+cQry += CRLF + " LEFT JOIN " + RetSqlName('LEI') + " LEI"
+cQry += CRLF + " ON  LEI.D_E_L_E_T_ <> '*'"
+cQry += CRLF + " AND LEI_FILIAL = '" + xFilial('LEI') + "'"
+cQry += CRLF + " AND LEI_PROD = B1_COD"
+cQry += CRLF + " WHERE SD1.D_E_L_E_T_ <> '*'"
+cQry += CRLF + "   AND D1_FILIAL = '" + xFilial('SD1') + "'"
+cQry += CRLF + "   AND D1_DTDIGIT BETWEEN '" + DTOS(MV_PAR01) + "' AND '" + DTOS(MV_PAR02) + "'"
+cQry += CRLF + "   AND LEI_PROD IS NOT NULL"
+cQry += CRLF + " GROUP BY"
+cQry += CRLF + "   A2_CGC"
+//cQry += CRLF + "  ,B1_TCOMBUS"
+cQry += CRLF + "  ,D1_DOC"
+cQry += CRLF + "  ,D1_EMISSAO"
+cQry += CRLF + "  ,D1_LOCAL"
+cQry += CRLF + "  ,F1_VALBRUT"
+cQry += CRLF + " ORDER BY"
+cQry += CRLF + "   A2_CGC"
+//cQry += CRLF + "  ,B1_TCOMBUS"
+cQry += CRLF + "  ,D1_DOC"
+cQry += CRLF + "  ,D1_EMISSAO"
+cQry += CRLF + "  ,D1_LOCAL"
+
+dbUseArea(.T.,'TOPCONN',TCGenQry(,,cQry),'MQRY',.T.)
+MQRY->(dbGoTop())
+
+aAdd(_aExcel, {'3 - Entradas do Mês'})
+aAdd(_aExcel, {'CNPJ Remetente','Combustível','No. Nota Fiscal','Data Nota Fiscal','Número Tanque Descarga','Quantidade (Litros)','Preço (Litros)','Valor Total da Nota Fiscal'})
+While !MQRY->(Eof())
+	aAdd(_aExcel, {AllTrim(MQRY->CNPJ), Combustivel(MQRY->COMBUSTIVEL), AllTrim(MQRY->NOTAFISCAL), STOD(MQRY->EMISSAO), AllTrim(MQRY->TANQUE), MQRY->PRECO, MQRY->VALORTOTAL})
+	
+	MQRY->(dbSkip())
+EndDo
+MQRY->(dbCloseArea())
 
 Return Nil
 
