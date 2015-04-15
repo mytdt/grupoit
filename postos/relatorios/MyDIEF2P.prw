@@ -335,7 +335,7 @@ MQRY->(dbGoTop())
 aAdd(_aExcel, {'4 - Vendas do Mês'})
 aAdd(_aExcel, {'Combustível','Valor Contábil da Vendas','Quantidade Total'})
 While !MQRY->(Eof())
-	aAdd(_aExcel, {Combustivel(MQRY->COMBUSTIVEL), MQRY->VALOR + MQRY->DESCONTO - MQRY->ACRESCIMO, MQRY->QUANTIDADE})
+	aAdd(_aExcel, {Combustivel(MQRY->COMBUSTIVEL), Round(MQRY->VALOR + MQRY->DESCONTO - MQRY->ACRESCIMO,2), Int(MQRY->QUANTIDADE)})
 	
 	MQRY->(dbSkip())
 EndDo
