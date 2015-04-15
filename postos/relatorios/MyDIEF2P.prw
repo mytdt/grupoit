@@ -303,7 +303,7 @@ Local cQry := ""
 Local nInicial, nFinal, nAfericao, nSemInter, nComInter
 
 cQry := CRLF + " SELECT"
-cQry += CRLF + "  ,'' AS COMBUSTIVEL"
+cQry += CRLF + "  '' AS COMBUSTIVEL"
 //cQry += CRLF + "  ,B1_TCOMBUS AS COMBUSTIVEL"
 cQry += CRLF + "  ,SUM(L2_VLRITEM) AS VALOR"
 cQry += CRLF + "  ,SUM(L2_VALDESC) AS DESCONTO"
@@ -325,9 +325,9 @@ cQry += CRLF + "   AND L2_VENDIDO = 'S'"
 cQry += CRLF + "   AND L1_TAFERIC <> 'S'"
 cQry += CRLF + "   AND L2_EMISSAO BETWEEN '" + DTOS(MV_PAR01) + "' AND '" + DTOS(MV_PAR02) + "'"
 //cQry += CRLF + " GROUP BY"
-//cQry += CRLF + "  ,B1_TCOMBUS"
+//cQry += CRLF + "  B1_TCOMBUS"
 //cQry += CRLF + " ORDER BY"
-//cQry += CRLF + "  ,B1_TCOMBUS"
+//cQry += CRLF + "  B1_TCOMBUS"
 
 dbUseArea(.T.,'TOPCONN',TCGenQry(,,cQry),'MQRY',.T.)
 MQRY->(dbGoTop())
