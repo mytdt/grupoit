@@ -280,7 +280,7 @@ MQRY->(dbGoTop())
 aAdd(_aExcel, {'3 - Entradas do Mês'})
 aAdd(_aExcel, {'CNPJ Remetente','Combustível','No. Nota Fiscal','Data Nota Fiscal','Número Tanque Descarga','Quantidade (Litros)','Preço (Litros)','Valor Total da Nota Fiscal'})
 While !MQRY->(Eof())
-	aAdd(_aExcel, {AllTrim(MQRY->CNPJ), Combustivel(MQRY->COMBUSTIVEL), AllTrim(MQRY->NOTAFISCAL), STOD(MQRY->EMISSAO), AllTrim(MQRY->TANQUE), MQRY->PRECO, MQRY->VALORTOTAL})
+	aAdd(_aExcel, {AllTrim(MQRY->CNPJ), Combustivel(MQRY->COMBUSTIVEL), AllTrim(MQRY->NOTAFISCAL), STOD(MQRY->EMISSAO), AllTrim(MQRY->TANQUE), MQRY->QUANTIDADE, MQRY->PRECO, MQRY->VALORTOTAL})
 	
 	MQRY->(dbSkip())
 EndDo
