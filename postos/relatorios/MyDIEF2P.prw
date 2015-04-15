@@ -95,6 +95,7 @@ Local nInicial, nFinal, nAfericao, nSemInter, nComInter
 cQry := CRLF + " SELECT"
 cQry += CRLF + "   LEB_SERIE AS BOMBA"
 cQry += CRLF + "  ,L2_TBICO AS BICO"
+cQry += CRLF + "  ,'' AS COMBUSTIVEL"
 //cQry += CRLF + "  ,B1_TCOMBUS AS COMBUSTIVEL"
 cQry += CRLF + "  ,MIN(L2_TENCINI) AS INICIAL"
 cQry += CRLF + "  ,MAX(L2_TENCFIM) AS FINAL"
@@ -145,7 +146,7 @@ While !MQRY->(Eof())
 	nAfericao := Int(MQRY->AFERICAO)
 	nSemInter := nFinal - nInicial
 	nComInter := nSemInter - nAfericao
-	aAdd(_aExcel, {AllTrim(MQRY->BOMBA), AllTrim(MQRY->BICO), /*Combustivel(MQRY->COMBUSTIVEL)*/'', nInicial, nFinal, nSemInter, nComInter})
+	aAdd(_aExcel, {AllTrim(MQRY->BOMBA), AllTrim(MQRY->BICO), Combustivel(MQRY->COMBUSTIVEL), nInicial, nFinal, nSemInter, nComInter})
 	
 	MQRY->(dbSkip())
 EndDo
@@ -166,6 +167,7 @@ Local aTanques := {}
 cQry := CRLF + " SELECT"
 cQry += CRLF + "   LET_NUMERO AS TANQUE"
 cQry += CRLF + "  ,LET_PRODUT AS PRODUTO"
+cQry += CRLF + "  ,'' AS COMBUSTIVEL"
 //cQry += CRLF + "  ,B1_TCOMBUS AS COMBUSTIVEL"
 cQry += CRLF + " FROM " + RetSqlName('LET') + " LET"
 cQry += CRLF + " LEFT JOIN " + RetSqlName('SB1') + " SB1"
@@ -190,12 +192,12 @@ While !MQRY->(Eof())
 	nQtdInicial := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR01)
 	nQtdFinal   := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR02+1)
 	
-	nPos := aScan(aTanques, {|x| x[1] == AllTrim(MQRY->TANQUE) .and. x[2] == ''/*MQRY->COMBUSTIVEL*/ })
+	nPos := aScan(aTanques, {|x| x[1] == AllTrim(MQRY->TANQUE) .and. x[2] == MQRY->COMBUSTIVEL })
 	If nPos > 0
 		aTanques[nPos][3] += nQtdInicial
 		aTanques[nPos][4] += nQtdFinal
 	Else
-		aAdd(aTanques, {AllTrim(MQRY->TANQUE), /*MQRY->COMBUSTIVEL*/'', nQtdInicial, nQtdFinal})
+		aAdd(aTanques, {AllTrim(MQRY->TANQUE), MQRY->COMBUSTIVEL, nQtdInicial, nQtdFinal})
 	EndIf
 	
 	MQRY->(dbSkip())
@@ -206,7 +208,7 @@ aAdd(_aExcel, {'2 - Estoque Físico de Abertura'})
 aAdd(_aExcel, {'Tanque','Combustível','Quantidade Inicial','Quantidade Final'})
 nTam := Len(aTanques)
 For nI := 1 to nTam
-	aAdd(_aExcel, {aTanques[nI][1], /*Combustivel(aTanques[nI][2])*/'', aTanques[nI][3], aTanques[nI][4]})
+	aAdd(_aExcel, {aTanques[nI][1], Combustivel(aTanques[nI][2]), aTanques[nI][3], aTanques[nI][4]})
 Next nI
 
 Return Nil
