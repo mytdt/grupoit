@@ -47,6 +47,7 @@ aAdd(_aExcel, {'Empresa: '+cEmpAnt+'/'+cFilAnt+'-'+AllTrim(SM0->M0_NOME)+' / '+A
 aAdd(_aExcel, {''})
 
 Secao1() // 1 - Movimentação
+Secao2() // 2 - Estoque Físico de Abertura
 
 cAux := AllTrim(cGetFile('CSV (*.csv)|*.csv', 'Selecione o diretório onde será salvo o relatório', 1, 'C:\', .T., nOR( GETF_LOCALHARD, GETF_LOCALFLOPPY, GETF_NETWORKDRIVE, GETF_RETDIRECTORY ), .F., .T.))
 If cAux <> ''
@@ -172,7 +173,7 @@ cQry += CRLF + " ON  SB1.D_E_L_E_T_ <> '*'"
 cQry += CRLF + " AND B1_FILIAL = '" + xFilial('SB1') + "'"
 cQry += CRLF + " AND B1_COD = LET_PRODUT"
 cQry += CRLF + " WHERE LET.D_E_L_E_T_ <> '*'"
-cQry += CRLF + "   AND LET_FILIAL = '" + xFilial('SL2') + "'"
+cQry += CRLF + "   AND LET_FILIAL = '" + xFilial('LET') + "'"
 cQry += CRLF + " GROUP BY"
 cQry += CRLF + "   LET_NUMERO"
 cQry += CRLF + "  ,LET_PRODUT"
@@ -189,12 +190,12 @@ While !MQRY->(Eof())
 	nQtdInicial := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR01)
 	nQtdFinal   := CalcEst(PadL(MQRY->PRODUTO,nTamCod),PadL(MQRY->TANQUE,nTamTq),MV_PAR02+1)
 	
-	nPos := aScan(aTanques, {|x| x[1] == AllTrim(MQRY->TANQUE) .and. x[2] == MQRY->COMBUSTIVEL })
+	nPos := aScan(aTanques, {|x| x[1] == AllTrim(MQRY->TANQUE) .and. x[2] == ''/*MQRY->COMBUSTIVEL*/ })
 	If nPos > 0
 		aTanques[nPos][3] += nQtdInicial
 		aTanques[nPos][4] += nQtdFinal
 	Else
-		aAdd(aTanques, {AllTrim(MQRY->TANQUE), MQRY->COMBUSTIVEL, nQtdInicial, nQtdFinal})
+		aAdd(aTanques, {AllTrim(MQRY->TANQUE), /*MQRY->COMBUSTIVEL*/'', nQtdInicial, nQtdFinal})
 	EndIf
 	
 	MQRY->(dbSkip())
