@@ -49,6 +49,7 @@ aAdd(_aExcel, {''})
 Secao1() // 1 - Movimentação
 Secao2() // 2 - Estoque Físico de Abertura
 Secao3() // 3 - Entradas do Mês
+Secao4() // 4 - Vendas do Mês
 
 cAux := AllTrim(cGetFile('CSV (*.csv)|*.csv', 'Selecione o diretório onde será salvo o relatório', 1, 'C:\', .T., nOR( GETF_LOCALHARD, GETF_LOCALFLOPPY, GETF_NETWORKDRIVE, GETF_RETDIRECTORY ), .F., .T.))
 If cAux <> ''
@@ -152,6 +153,7 @@ While !MQRY->(Eof())
 	MQRY->(dbSkip())
 EndDo
 MQRY->(dbCloseArea())
+aAdd(_aExcel, {''})
 
 Return Nil
 
@@ -214,6 +216,7 @@ nTam := Len(aTanques)
 For nI := 1 to nTam
 	aAdd(_aExcel, {aTanques[nI][1], Combustivel(aTanques[nI][2]), Int(aTanques[nI][3]), Int(aTanques[nI][4])})
 Next nI
+aAdd(_aExcel, {''})
 
 Return Nil
 
@@ -288,6 +291,56 @@ While !MQRY->(Eof())
 	MQRY->(dbSkip())
 EndDo
 MQRY->(dbCloseArea())
+aAdd(_aExcel, {''})
+
+Return Nil
+
+/* ------------------- */
+
+Static Function Secao4()
+
+Local cQry := ""
+Local nInicial, nFinal, nAfericao, nSemInter, nComInter
+
+cQry := CRLF + " SELECT"
+cQry += CRLF + "  ,'' AS COMBUSTIVEL"
+//cQry += CRLF + "  ,B1_TCOMBUS AS COMBUSTIVEL"
+cQry += CRLF + "  ,SUM(L2_VLRITEM) AS VALOR"
+cQry += CRLF + "  ,SUM(L2_VALDESC) AS DESCONTO"
+cQry += CRLF + "  ,SUM(L2_VALACRS) AS ACRESCIMENTO"
+cQry += CRLF + "  ,SUM(L2_QUANT) AS QUANTIDADE"
+cQry += CRLF + " FROM " + RetSqlName('SL2') + " SL2"
+cQry += CRLF + " LEFT JOIN " + RetSqlName('SL1') + " SL1"
+cQry += CRLF + " ON  SL1.D_E_L_E_T_ <> '*'"
+cQry += CRLF + " AND L1_FILIAL = '" + xFilial('SL1') + "'"
+cQry += CRLF + " AND L1_NUM = L2_NUM"
+cQry += CRLF + " AND L1_EMISNF = L2_EMISSAO"
+cQry += CRLF + " LEFT JOIN " + RetSqlName('SB1') + " SB1"
+cQry += CRLF + " ON  SB1.D_E_L_E_T_ <> '*'"
+cQry += CRLF + " AND B1_FILIAL = '" + xFilial('SB1') + "'"
+cQry += CRLF + " AND B1_COD = L2_PRODUTO"
+cQry += CRLF + " WHERE SL2.D_E_L_E_T_ <> '*'"
+cQry += CRLF + "   AND L2_FILIAL = '" + xFilial('SL2') + "'"
+cQry += CRLF + "   AND L2_VENDIDO = 'S'"
+cQry += CRLF + "   AND L1_TAFERIC <> 'S'"
+cQry += CRLF + "   AND L2_EMISSAO BETWEEN '" + DTOS(MV_PAR01) + "' AND '" + DTOS(MV_PAR02) + "'"
+//cQry += CRLF + " GROUP BY"
+//cQry += CRLF + "  ,B1_TCOMBUS"
+//cQry += CRLF + " ORDER BY"
+//cQry += CRLF + "  ,B1_TCOMBUS"
+
+dbUseArea(.T.,'TOPCONN',TCGenQry(,,cQry),'MQRY',.T.)
+MQRY->(dbGoTop())
+
+aAdd(_aExcel, {'4 - Vendas do Mês'})
+aAdd(_aExcel, {'Combustível','Valor Contábil da Vendas','Quantidade Total'})
+While !MQRY->(Eof())
+	aAdd(_aExcel, {Combustivel(MQRY->COMBUSTIVEL), MQRY->VALOR + MQRY->DESCONTO - MQRY->ACRESCIMO, MQRY->QUANTIDADE})
+	
+	MQRY->(dbSkip())
+EndDo
+MQRY->(dbCloseArea())
+aAdd(_aExcel, {''})
 
 Return Nil
 
