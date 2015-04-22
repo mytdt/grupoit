@@ -342,6 +342,7 @@ While MV_PAR01 <= MV_PAR02
 	SL2->(DbSetFilter({||&cFilSL2}, cFilSL2))
 	SL2->(dbGoTop())
 	
+	/*
 	cQry := CRLF + " SELECT"
 	cQry += CRLF + "    MAX(L2_TENCFIM) AS L2_TENCFIM"
 	cQry += CRLF + "   ,L2_LOCAL"
@@ -364,6 +365,7 @@ While MV_PAR01 <= MV_PAR02
 		MQRY->(dbSkip())
 	EndDo
 	MQRY->(dbCloseArea())
+	*/
 	
 	aColsVen := {}
 	
@@ -377,8 +379,9 @@ While MV_PAR01 <= MV_PAR02
 			If !Empty(SL2->L2_TBICO) .And. SL2->L2_VENDIDO == "S" .And. Alltrim(SL2->L2_PRODUTO)  == Alltrim(MV_PAR03)
 				
 				nPos 	:= Ascan(aColsVen,{|x| x[1]+x[2] == SL2->L2_LOCAL + SL2->L2_TBICO})
-				nPos2 	:= Ascan(aUltEnc,{|x| x[1]+x[2] == SL2->L2_LOCAL + SL2->L2_TBICO})
+				//nPos2 	:= Ascan(aUltEnc,{|x| x[1]+x[2] == SL2->L2_LOCAL + SL2->L2_TBICO})
 				
+				/*
 				If nPos2 > 0
 					If SL2->L2_TENCINI >= aUltEnc[nPos2][3]
 						nEncIni := SL2->L2_TENCINI
@@ -386,8 +389,9 @@ While MV_PAR01 <= MV_PAR02
 						nEncIni := aUltEnc[nPos2][3]
 					EndIf
 				Else
+				*/
 					nEncIni := SL2->L2_TENCINI
-				EndIf
+				//EndIf
 				
 				nEncFin := SL2->L2_TENCFIM
 				cLocal	:= SL2->L2_LOCAL
